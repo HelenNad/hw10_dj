@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.core.paginator import Paginator
 
@@ -24,11 +25,14 @@ def description_auth(request, id_):
     return render(request, template_name='quotes/descript_author.html', context={'authors': authors})
 
 
+@login_required
 def tag_add(request):
     if request.method == 'POST':
         form = TagForm(request.POST)
         if form.is_valid():
-            form.save()
+            tag = form.save(commit=False)
+            tag.user = request.user
+            tag.save()
             return redirect(to='quotes:root')
         else:
             return render(request, 'quotes/add_tag.html', {'form': form})
@@ -36,11 +40,14 @@ def tag_add(request):
     return render(request, 'quotes/add_tag.html', {'form': TagForm()})
 
 
+@login_required
 def author_add(request):
     if request.method == 'POST':
         form = AuthorForm(request.POST)
         if form.is_valid():
-            form.save()
+            author = form.save(commit=False)
+            author.user = request.user
+            author.save()
             return redirect(to='quotes:root')
         else:
             return render(request, 'quotes/add_author.html', {'form': form})
@@ -49,13 +56,15 @@ def author_add(request):
 
 
 def quote_add(request):
-    tags = Tag.objects.all()
+    tags = Tag.objects.filter(user=request.user).all()
 
     if request.method == 'POST':
         form = QuoteForm(request.POST)
         if form.is_valid():
-            quote = form.save()
-            choice_tags = Tag.objects.filter(name__in=request.POST.getlist('tags'))
+            quote = form.save(commit=False)
+            quote.user = request.user
+            quote.save()
+            choice_tags = Tag.objects.filter(name__in=request.POST.getlist('tags'), user=request.user)
             for tag in choice_tags.iterator():
                 quote.tags.add(tag)
 
