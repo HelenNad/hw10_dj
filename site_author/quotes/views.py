@@ -65,6 +65,7 @@ def quote_add(request):
             quote.user = request.user
             quote.save()
             choice_tags = Tag.objects.filter(name__in=request.POST.getlist('tags'), user=request.user)
+            print(choice_tags)
             for tag in choice_tags.iterator():
                 quote.tags.add(tag)
 

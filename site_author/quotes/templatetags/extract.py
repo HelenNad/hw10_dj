@@ -29,6 +29,7 @@ register.filter('transition', transition_do_db)
 
 
 def tags(quote_tags):
+
     return ', '.join([str(name) for name in quote_tags.all()])
 
 
